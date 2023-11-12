@@ -76,7 +76,7 @@ const app = new Vue({
             // Redirect to the homepage after a short delay (you can adjust the delay as needed)
             setTimeout(() => {
                 window.location.href = 'http://127.0.0.1:5500/index.html';
-            }, 2000); // Redirect after 2 seconds (2000 milliseconds)
+            }, 500); // Redirect after 0.5 seconds (500 milliseconds)
 
         },
         removeFromCart(cartItem) {
