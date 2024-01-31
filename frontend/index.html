@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>
+        Malik coursework2
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+      @layer components {
+        .responsive-container {
+          @apply px-6 mx-auto max-w-full lg:px-12 py-4;
+        }
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#FFA500",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <nav
+          class="bg-white border-gray-200 dark:bg-gray-800 responsive-container"
+        >
+          <div
+            class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl"
+          >
+            <a href="javascript:void(0)" class="flex items-center">
+              <img
+                src="https://ik.imagekit.io/fmxqscuev/icons8-lessons-64_pdvEMVgCW.png?ik-sdk-version=javascript-1.4.3&updatedAt=1666292631783"
+                class="mr-3 h-6 sm:h-9"
+                alt="Flowbite Logo"
+              />
+              <span
+                class="self-center text-xl font-semibold whitespace-nowrap dark:text-primary"
+                >Malik Courework1</span
+              >
+            </a>
+
+            <button
+              class="relative transition duration-200"
+              :class="[cartLength <= 0 ? 'text-gray-500' : 'text-white']"
+              :disabled="cartLength <= 0"
+              @click.prevent="toggleCartDisplay"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-6 h-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                />
+              </svg>
+              <span
+                class="absolute -top-2 -right-2 w-4 h-4 flex justify-center items-center bg-primary text-white text-xs rounded-full"
+                >{{ cartLength }}</span
+              >
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      <main class="mt-4">
+        <div
+          v-if="!isCartDisplaying"
+          id="lessons"
+          class="responsive-container flex sm:flex-row sm:justify-between sm:space-x-8 sm:space-y-0 flex-col space-y-8"
+        >
+          <div class="sm:w-1/5 space-y-6">
+            <div class="w-full">
+              <input
+                type="text"
+                id="search"
+                placeholder="Search lessons..."
+                v-model="searchText"
+                class="mt-1 block w-full p-2 rounded border-2 border-gray-500 focus:ring-primary transition duration-200 focus:ring-offset-2 focus:ring-2 focus:outline-none placeholder:font-semibold"
+              />
+            </div>
+
+            <div class="space-y-4">
+              <p class="text-base font-semibold tracking-wide">Filter by:</p>
+
+              <div class="space-y-2">
+                <div
+                  v-for="(sortOption, index) in sortOptions"
+                  :key="index"
+                  class="flex items-center"
+                >
+                  <div>
+                    <input
+                      type="radio"
+                      name="filter"
+                      v-model="sortBy"
+                      :value="sortOption"
+                      :id="sortOption"
+                      class="w-4 h-4 mr-3 checkbox appearance-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded-full focus:outline-none border border-gray-400 checked:border-4 checked:border-primary cursor-pointer"
+                    />
+                  </div>
+                  <label
+                    :for="sortOption"
+                    class="capitalize cursor-pointer"
+                    :class="{'text-primary': sortBy === sortOption}"
+                    >{{ sortOption }}</label
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <p class="text-base font-semibold tracking-wide">Order by:</p>
+
+              <div class="space-y-2">
+                <div
+                  v-for="(order, index) in orders"
+                  :key="index"
+                  class="flex items-center"
+                >
+                  <div>
+                    <input
+                      type="radio"
+                      name="order"
+                      v-model="orderBy"
+                      :value="order.value"
+                      :id="order.value"
+                      class="w-4 h-4 mr-3 checkbox appearance-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded-full focus:outline-none border border-gray-400 checked:border-4 checked:border-primary cursor-pointer"
+                    />
+                  </div>
+                  <label
+                    :for="order.value"
+                    class="capitalize cursor-pointer"
+                    :class="{'text-primary': orderBy === order.value}"
+                    >{{ order.text }}</label
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full flex justify-center" v-if="loading">
+            <iframe
+              class="w-1/2"
+              src="https://embed.lottiefiles.com/animation/99297"
+              title="loading"
+            ></iframe>
+          </div>
+
+          <div class="w-full flex justify-center" v-else-if="error">
+            <iframe
+              class="w-1/2"
+              src="https://embed.lottiefiles.com/animation/95614"
+              title="error"
+            ></iframe>
+          </div>
+
+          <div
+            class="sm:w-4/5 grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            v-else-if="filteredLessons.length > 0"
+          >
+            <div
+              class="p-4 space-y-2 flex flex-col justify-between border-2 border-black rounded-xl"
+              v-for="(lesson, index) in filteredLessons"
+              :key="index"
+            >
+              <div class="flex justify-between space-x-6">
+                <div class="space-y-1">
+                  <p><strong>Subject:</strong> {{ lesson.subject }}</p>
+                  <p><strong>Location:</strong> {{ lesson.location }}</p>
+                  <p><strong>Price:</strong> £{{ lesson.price }}</p>
+                  <p><strong>Spaces:</strong> {{ lesson.spaces }}</p>
+                </div>
+
+                <img
+                  :src="`http://cartvuebackend.eu-north-1.elasticbeanstalk.com/${lesson.image}`"
+                  :alt="lesson.subject"
+                  class="w-10 h-10"
+                />
+              </div>
+
+              <div class="flex justify-end">
+                <button
+                  class="!mt-2 text-sm bg-primary p-1.5 rounded text-white transition duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                  :disabled="lesson.spaces <= 0"
+                  v-on:click.prevent="addToCart(lesson._id)"
+                >
+                  Add to cart
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full flex flex-col justify-center items-center" v-else>
+            <iframe
+              class="w-1/2"
+              src="https://embed.lottiefiles.com/animation/93134"
+              title="empty"
+            ></iframe>
+            <p class="text-lg">No lessons to show</p>
+          </div>
+        </div>
+
+        <div v-else id="cart" class="responsive-container">
+          <h2 class="font-semibold text-xl uppercase tracking-wide block">
+            Shopping Cart
+          </h2>
+
+          <div
+            class="flex sm:flex-row sm:justify-between sm:space-x-8 sm:space-y-0 flex-col space-y-8 mt-4"
+          >
+            <div
+              class="w-full md:w-1/2 lg:w-3/4 grid lg:grid-cols-2 xl:grid-cols-3 gap-4"
+              v-if="!!this.cart.length"
+            >
+              <div
+                class="p-4 space-y-2 flex flex-col justify-between border-2 border-black rounded-xl"
+                v-for="(item, index) in cart"
+                :key="index"
+              >
+                <div class="flex justify-between space-x-6">
+                  <div class="space-y-1">
+                    <p><strong>Subject:</strong> {{ item.subject }}</p>
+                    <p><strong>Location:</strong> {{ item.location }}</p>
+                    <p><strong>Price:</strong> £{{ item.price }}</p>
+                    <p><strong>Spaces:</strong> {{ item.spaces }}</p>
+                  </div>
+
+                  <img
+                    :src="`http://cartvuebackend.eu-north-1.elasticbeanstalk.com/${item.image}`"
+                    :alt="item.subject"
+                    class="w-10 h-10"
+                  />
+                </div>
+
+                <div class="flex justify-end">
+                  <button
+                    class="!mt-2 text-sm bg-primary p-1.5 rounded text-white transition duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                    v-on:click.prevent="removeFromCart(item._id)"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="w-full md:w-1/2 lg:w-3/4 flex items-center justify-center"
+              v-else
+            >
+              <div class="flex flex-col items-center justify-center space-y-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-12 h-12"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25 2.25M12 13.875l2.25-2.25M12 13.875l-2.25 2.25M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+                  />
+                </svg>
+
+                <h6 class="font-semibold text-xl">No lessons in cart</h6>
+              </div>
+            </div>
+
+            <div class="w-full md:w-1/2 lg:w-1/4">
+              <form v-on:submit.prevent="checkout" class="space-y-4">
+                <div class="w-full">
+                  <label for="name">Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    v-model="checkoutForm.name.value"
+                    class="mt-1 block w-full p-2 rounded border-2 transition duration-200 focus:ring-offset-2 focus:ring-2 focus:outline-none"
+                    :class="[!checkoutForm.name.error ? 'border-gray-500 focus:ring-primary' : 'border-red-500 focus:ring-red-500' ]"
+                  />
+                  <p
+                    v-if="checkoutForm.name.error"
+                    class="text-red-500 text-sm"
+                  >
+                    {{ checkoutForm.name.error }}
+                  </p>
+                </div>
+
+                <div class="w-full">
+                  <label for="phone">Phone</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    v-model="checkoutForm.phone.value"
+                    class="mt-1 block w-full p-2 rounded border-2 transition duration-200 focus:ring-offset-2 focus:ring-2 focus:outline-none"
+                    :class="[!checkoutForm.phone.error ? 'border-gray-500 focus:ring-primary' : 'border-red-500 focus:ring-red-500' ]"
+                  />
+                  <p
+                    v-if="checkoutForm.phone.error"
+                    class="text-red-500 text-sm"
+                  >
+                    {{ checkoutForm.phone.error }}
+                  </p>
+                </div>
+
+                <button
+                  class="block w-full bg-primary p-2 rounded text-white font-semibold"
+                  :class="{'opacity-50': !isCheckoutFormValid}"
+                  :disabled="!isCheckoutFormValid"
+                >
+                  <div v-if="loading" class="flex h-5 w-5 m-auto relative">
+                    <span
+                      class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"
+                    ></span>
+                    <span
+                      class="inline-flex rounded-full h-5 w-5 bg-primary-dark"
+                    ></span>
+                  </div>
+
+                  <span v-else>Checkout</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <transition
+        enter-active-class="transition ease-out duration-200 transform"
+        enter-from-class="-translate-y-2"
+        enter-to-class="translate-y-0"
+        leave-active-class="transition ease-in duration-200 transform"
+        leave-from-class="translate-y-0"
+        leave-to-class="-translate-y-2"
+      >
+        <div
+          v-if="checkedOut"
+          id="toast-success"
+          class="flex items-center p-4 mb-4 w-full max-w-xs text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800 fixed bottom-2 right-4"
+          role="alert"
+        >
+          <div
+            class="inline-flex flex-shrink-0 justify-center items-center w-8 h-8 text-primary bg-primary-100 rounded-lg dark:bg-primary-800 dark:text-primary-200"
+          >
+            <svg
+              aria-hidden="true"
+              class="w-5 h-5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
+            <span class="sr-only">Check icon</span>
+          </div>
+          <div class="ml-3 text-sm font-normal">Succesful Checkout</div>
+          <button
+            @click.prevent="checkedOut = false"
+            type="button"
+            class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
+            data-dismiss-target="#toast-success"
+            aria-label="Close"
+          >
+            <span class="sr-only">Close</span>
+            <svg
+              aria-hidden="true"
+              class="w-5 h-5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </transition>
+    </div>
+
+
+
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <script type="module" src="main.js"> </script>
+    
+</body>
+</html>
