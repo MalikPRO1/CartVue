@@ -6,7 +6,7 @@ new Vue({
         // State variables
         loading: false,
         error: null,
-        url: "http://cartvuebackend.eu-north-1.elasticbeanstalk.com",
+        url: "https://cartvuebackend.eu-north-1.elasticbeanstalk.com",
         searchText: "",
         sortBy: "subject",
         orderBy: "asc",
